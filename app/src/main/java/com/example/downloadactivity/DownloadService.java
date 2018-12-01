@@ -10,17 +10,17 @@ import android.support.annotation.Nullable;
  * Created by yly on 2018/12/1.
  */
 
-public class DwonloadService extends Service {
+public class DownloadService extends Service {
 
     private MyBinder myBinder=new MyBinder();
     class MyBinder extends Binder{
-        private void startDownload(){
+        public void startDownload(String downloadUrl){
 
         }
-        private void pauseDownload(){
+        public void pauseDownload(){
 
         }
-        private void cancelDownload(){
+        public void cancelDownload(){
 
         }
     }
