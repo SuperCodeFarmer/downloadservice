@@ -29,7 +29,6 @@ public class DownloadService extends Service {
         @Override
         public void onProgress(int progresss) {
             getNotificationManager().notify(1,getNotification("Downloading",progresss));
-            Toast.makeText(DownloadService.this,"Download Success",Toast.LENGTH_SHORT).show();
         }
 
         @Override
@@ -64,9 +63,9 @@ public class DownloadService extends Service {
 
     private MyBinder myBinder=new MyBinder();
     class MyBinder extends Binder{
-        public void startDownload(String downloadurl){
+        public void startDownload(String downloadedurl){
             if (downloadTask==null){
-                downloadUrl=downloadurl;
+                downloadUrl=downloadedurl;
                 downloadTask=new DownloadTask(listener);
                 downloadTask.execute(downloadUrl);
                 //写下载任务的通知
@@ -87,7 +86,7 @@ public class DownloadService extends Service {
                 String fileName=downloadUrl.substring(downloadUrl.lastIndexOf("/"));
                 String directory= Environment.getExternalStoragePublicDirectory(Environment
                 .DIRECTORY_DOWNLOADS).getPath();
-                File file=new File(fileName+directory);
+                File file=new File(directory+fileName);
                 if (file.exists()){
                     file.delete();
                 }

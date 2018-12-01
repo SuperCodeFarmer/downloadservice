@@ -12,11 +12,14 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+
+    private static final String TAG=MainActivity.class.getSimpleName();
 
     private DownloadService.MyBinder myBinder;
     private ServiceConnection connection=new ServiceConnection() {
@@ -33,9 +36,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.e(TAG,"yly---MainActivity---onCreate1");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        Log.e(TAG,"yly---MainActivity---onCreate2");
         Button startButton=findViewById(R.id.start_button);
         Button pauseButton=findViewById(R.id.pause_button);
         Button cancelButton=findViewById(R.id.cancel_button);

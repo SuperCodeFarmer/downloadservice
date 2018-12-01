@@ -2,6 +2,7 @@ package com.example.downloadactivity;
 
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.util.Log;
 import android.webkit.DownloadListener;
 
 import java.io.BufferedReader;
@@ -21,6 +22,7 @@ import okhttp3.Response;
  */
 
 public class DownloadTask extends AsyncTask<String,Integer,Integer> {
+    public static final String TAG=DownloadTask.class.getSimpleName();
 
     public static final int TYPR_SUCCESS=0;
     public static final int TYPR_PAUSED=2;
@@ -29,6 +31,7 @@ public class DownloadTask extends AsyncTask<String,Integer,Integer> {
 
     private boolean isCanceled=false;
     private boolean isPaused=false;
+    private int lastProgress=0;
 
     private DownloadListen listener;
     public DownloadTask (DownloadListen listener){
@@ -37,24 +40,27 @@ public class DownloadTask extends AsyncTask<String,Integer,Integer> {
 
     @Override
     protected Integer doInBackground(String... strings) {
-        long contentLength=0;
-        long downloadedLength=0;
+        //long contentLength=0;
         File file=null;
-        Response response=null;
         RandomAccessFile savedFile=null;
         InputStream is=null;
-        String downloadUrl=strings[0];
         try{
+            Log.e(TAG,"yly---DownloadTask---doInBackground---0");
+            long downloadedLength=0;
+            String downloadUrl=strings[0];
             String fileName=downloadUrl.substring(downloadUrl.lastIndexOf("/"));
             String directory= Environment.getExternalStoragePublicDirectory(Environment
                     .DIRECTORY_DOWNLOADS).getPath();
-            file=new File(fileName+directory);
+            file=new File(directory+fileName);
             if (file.exists()){
                 downloadedLength=file.length();
             }
             //得到文件的总长度
-            contentLength=getContentLength(downloadUrl);
+            Log.e(TAG,"yly---DownloadTask---doInBackground---1");
+            long contentLength=getContentLength(downloadUrl);
+            Log.e(TAG,"yly---DownloadTask---doInBackground---2");
             if (contentLength==0){
+                Log.e(TAG,"yly---DownloadTask---doInBackground---3");
                 return TYPR_FAILED;
             }else if (contentLength==downloadedLength){
                 return TYPR_SUCCESS;
@@ -65,14 +71,20 @@ public class DownloadTask extends AsyncTask<String,Integer,Integer> {
                     .addHeader("RANGE","bytes="+downloadedLength+"-")
                     .url(downloadUrl)
                     .build();
-            response=client.newCall(request).execute();
+            Response response=client.newCall(request).execute();
+            Log.e(TAG,"yly---DownloadTask---doInBackground---4");
             if (response!=null){
+                Log.e(TAG,"yly---DownloadTask---doInBackground---5");
                 is=response.body().byteStream();
+                Log.e(TAG,"yly---DownloadTask---doInBackground---5.1");
                 savedFile=new RandomAccessFile(file,"rw");
+                Log.e(TAG,"yly---DownloadTask---doInBackground---5.2");
                 savedFile.seek(downloadedLength);
+                Log.e(TAG,"yly---DownloadTask---doInBackground---6");
                 byte[] b=new byte[1024];
                 int total=0;
                 int len;
+                Log.e(TAG,"yly---DownloadTask---doInBackground---7");
                 while((len=is.read(b))!=-1){
                     if (isCanceled){
                         return TYPR_CANCELED;
@@ -112,7 +124,11 @@ public class DownloadTask extends AsyncTask<String,Integer,Integer> {
 
     @Override
     protected void onProgressUpdate(Integer... values) {
-        super.onProgressUpdate(values);
+        int progress=values[0];
+        if (progress>lastProgress){
+            listener.onProgress(progress);
+            lastProgress=progress;
+        }
     }
 
     @Override
@@ -143,6 +159,7 @@ public class DownloadTask extends AsyncTask<String,Integer,Integer> {
     }
 
     private long getContentLength(String downloadUrl) throws IOException{
+        Log.e(TAG,"yly---DownloadTask---getContentLength---1.1");
         OkHttpClient client=new OkHttpClient();
         Request request=new Request.Builder()
                 .url(downloadUrl)
@@ -151,6 +168,7 @@ public class DownloadTask extends AsyncTask<String,Integer,Integer> {
         if (response!=null&&response.isSuccessful()){
             long contentLength=response.body().contentLength();
             response.close();
+            Log.e(TAG,"yly---DownloadTask---getContentLength---1.2");
             return contentLength;
         }
         return 0;
